@@ -1,89 +1,168 @@
-Vodoc
-[!Python](https://www.python.org/)
-[!License: MIT](LICENSE)
-[!OCR](https://github.com/tesseract-ocr/tesseract)
-Turn scanned documents into narrated audio — an accessibility tool for visually impaired readers.
-VoDoc takes a PDF or a photo of a page, extracts the text (fast text-layer parsing first, Tesseract OCR fallback for scanned pages), cleans it up, and reads it aloud — or saves the narration as an audio file. It grew out of volunteer work with the Ethiopian National Association for the Blind, where I saw how much of daily life is gated behind documents some people can't read.
+# VoDoc
 
-Demo
-$ python -m src.cli sample.pdf --text-only
+<p align="center">
+  <img src="https://img.shields.io/badge/Python-3.10%2B-3776AB?logo=python&logoColor=white" alt="Python 3.10+" />
+  <img src="https://img.shields.io/badge/OCR-Tesseract-5B7CFA?logo=tesseract&logoColor=white" alt="Tesseract OCR" />
+  <img src="https://img.shields.io/badge/License-MIT-green" alt="MIT License" />
+</p>
+
+VoDoc converts scanned PDFs and photos of documents into spoken audio, making reading more accessible for visually impaired users. It tries the PDF's embedded text first, then falls back to OCR when needed, and reads the cleaned text aloud using offline text-to-speech.
+
+## Why VoDoc?
+
+- Reads scanned documents and pages from images/PDFs
+- Uses PDF text extraction first for speed and accuracy
+- Falls back to Tesseract OCR for image-based or scanned content
+- Cleans extracted text before speaking it aloud
+- Works fully offline with no API keys required
+
+## Features
+
+- Hybrid extraction pipeline: embedded PDF text first, OCR fallback
+- Tesseract-powered OCR for photos and scanned pages
+- Language-aware OCR support, including Amharic via `--lang amh`
+- Text cleanup for hyphenation, spacing, and noise reduction
+- Offline speech synthesis with adjustable reading speed
+- Audio export to a file in addition to live playback
+- Clear reporting of extraction method and character count
+
+## Demo
+
+```bash
+python -m src.cli sample.pdf --text-only
+```
+
+Example output:
+
+```text
 [extracted via text-layer: 339 characters]
-Accessible Document Reader - sample document. This PDF has a real text
-layer, so the reader extracts it directly without needing OCR...
+Accessible Document Reader - sample document. This PDF has a real text layer, so the reader extracts it directly without needing OCR...
+```
 
-$ python -m src.cli sample-scanned.pdf --speak
+```bash
+python -m src.cli sample-scanned.pdf --speak
+```
+
+```text
 [extracted via ocr: 412 characters]
 # 🔊 your computer reads the page aloud
+```
 
-$ python -m src.cli lecture-notes.pdf --save-audio lecture-notes.aiff --rate 190
+```bash
+python -m src.cli lecture-notes.pdf --save-audio lecture-notes.aiff --rate 190
+```
+
+```text
 [extracted via ocr: 5210 characters]
 Saved narration to lecture-notes.aiff
-Features
-Hybrid text extraction — tries the PDF's embedded text layer first (fast, exact); falls back to OCR automatically for scanned pages
-OCR via Tesseract — handles photos and scans; language-configurable (--lang amh for Amharic, and 100+ more)
-Text cleanup — de-hyphenates line breaks, collapses whitespace, strips noise
-Offline text-to-speech — no API keys, no network, no cost; adjustable reading rate
-Audio export — save narration to a file instead of playing it
-Transparent pipeline — every run reports which extraction method was used and how much text was found
-Installation
-1. System dependencies (outside Python — pip can't install these):
-# macOS
+```
+
+## Installation
+
+### 1) System dependencies
+
+On macOS:
+
+```bash
 brew install tesseract tesseract-lang poppler
+```
 
-# Ubuntu / Debian
+On Ubuntu/Debian:
+
+```bash
 sudo apt install tesseract-ocr tesseract-ocr-eng poppler-utils
-Tool
-Job
-Tesseract
-Reads text out of images (the OCR engine)
-poppler
-Renders PDF pages into images for OCR
-2. Python packages:
+```
+
+### 2) Python dependencies
+
+```bash
 pip install -r requirements.txt
-Usage
-# Print extracted text
+```
+
+## Usage
+
+Print extracted text:
+
+```bash
 python -m src.cli document.pdf --text-only
+```
 
-# Read aloud (default 175 words/min)
+Read aloud at the default speed:
+
+```bash
 python -m src.cli document.pdf --speak
+```
 
-# Read aloud faster
+Read more quickly:
+
+```bash
 python -m src.cli document.pdf --speak --rate 200
+```
 
-# Save narration to audio (AIFF on macOS, MP3 elsewhere)
+Save narration as audio:
+
+```bash
 python -m src.cli document.pdf --save-audio narration.aiff
+```
 
-# OCR a photo of a page, in Amharic
+OCR a photo of a page in Amharic:
+
+```bash
 python -m src.cli page.jpg --speak --lang amh
-Try it with the included samples: sample.pdf (text layer) and sample-scanned.pdf (OCR path).
-How it works
-PDF / image ──▶  reader.py  ──▶  clean.py  ──▶  speaker.py  ──▶  🔊 / audio file
-                  │ text-layer     │ de-hyphenate   │ pyttsx3 (live)
-                  │ first, OCR     │ normalise      │ `say` (file, macOS)
-                  │ fallback       │ whitespace     │
-Each module does one job and knows nothing about the others — the pattern
-that makes the code easy to test and extend. See
-CODE_WALKTHROUGH.md for a full file-by-file breakdown
-and a guide to rebuilding it from scratch.
-Project structure
-vodoc/
+```
+
+Try the included samples:
+
+- `sample.pdf` — PDF with a text layer
+- `sample-scanned.pdf` — scanned document that uses OCR fallback
+
+## How it works
+
+```text
+PDF / image ──▶ reader.py ──▶ clean.py ──▶ speaker.py ──▶ 🔊 / audio file
+                 │ text-layer     │ de-hyphenate   │ pyttsx3 (live)
+                 │ first, OCR     │ normalize      │ `say` (file, macOS)
+                 │ fallback       │ whitespace     │
+```
+
+Each module focuses on one responsibility, which keeps the project easy to test and extend. For a deeper walkthrough, see `CODE_WALKTHROUGH.md`.
+
+## Project structure
+
+```text
+VoDoc/
 ├── src/
-│   ├── cli.py        # command-line interface (argparse)
-│   ├── reader.py     # document loading: text layer → OCR fallback
+│   ├── cli.py        # command-line interface
+│   ├── reader.py     # document loading and extraction pipeline
 │   ├── ocr.py        # Tesseract wrapper
-│   ├── clean.py      # text normalisation for speech
+│   ├── clean.py      # text normalization for speech
 │   └── speaker.py    # offline TTS + audio export
 ├── tests/
 │   └── test_clean.py
-├── sample.pdf            # text-layer sample
-├── sample-scanned.pdf    # OCR-path sample
-└── CODE_WALKTHROUGH.md   # deep-dive documentation
-Roadmap
-[ ] Amharic end-to-end: amh OCR + Amharic TTS voice
-[ ] Chapter chunking for long documents with a spoken table of contents
-[ ] Confidence-based re-OCR: flag low-confidence words for review
-[ ] Web UI (upload → listen) for non-technical users
-Tech stack
-Python · Tesseract OCR · pyttsx3 · pypdf · pdf2image · Pillow
-License
-MIT — see LICENSE.
+├── sample.pdf
+├── sample-scanned.pdf
+├── CODE_WALKTHROUGH.md
+├── requirements.txt
+├── LICENSE
+└── README.md
+```
+
+## Roadmap
+
+- [ ] Amharic end-to-end OCR + spoken voice support
+- [ ] Chapter chunking for long documents with a spoken table of contents
+- [ ] Confidence-based re-OCR for low-quality scans
+- [ ] Web UI for upload-and-listen workflows
+
+## Tech stack
+
+- Python
+- Tesseract OCR
+- pyttsx3
+- pypdf
+- pdf2image
+- Pillow
+
+## License
+
+MIT — see [LICENSE](LICENSE).

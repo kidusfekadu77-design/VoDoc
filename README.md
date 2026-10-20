@@ -3,7 +3,6 @@
 <p align="center">
   <img src="https://img.shields.io/badge/Python-3.10%2B-3776AB?logo=python&logoColor=white" alt="Python 3.10+" />
   <img src="https://img.shields.io/badge/OCR-Tesseract-5B7CFA?logo=tesseract&logoColor=white" alt="Tesseract OCR" />
-  <img src="https://img.shields.io/badge/License-MIT-green" alt="MIT License" />
 </p>
 
 VoDoc converts scanned PDFs and photos of documents into spoken audio, making reading more accessible for visually impaired users. It tries the PDF's embedded text first, then falls back to OCR when needed, and reads the cleaned text aloud using offline text-to-speech.
@@ -163,6 +162,4 @@ VoDoc/
 - pdf2image
 - Pillow
 
-## License
 
-MIT — see [LICENSE](LICENSE).
